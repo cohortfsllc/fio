@@ -24,6 +24,7 @@ DEBUGFLAGS = -D_FORTIFY_SOURCE=2 -DFIO_INC_DEBUG
 CPPFLAGS= -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DFIO_INTERNAL $(DEBUGFLAGS)
 OPTFLAGS= -g -ffast-math
 CFLAGS	= -std=gnu99 -Wwrite-strings -Wall -Wdeclaration-after-statement $(OPTFLAGS) $(EXTFLAGS) $(BUILD_CFLAGS) -I. -I$(SRCDIR)
+CXXFLAGS= $(OPTFLAGS) $(EXTFLAGS) $(BUILD_CXXFLAGS) -I. -I$(SRCDIR)
 LIBS	+= -lm $(EXTLIBS)
 PROGS	= fio
 SCRIPTS = $(addprefix $(SRCDIR)/,tools/fio_generate_plots tools/plot/fio2gnuplot tools/genfio)
@@ -179,7 +180,7 @@ ifneq (,$(findstring CYGWIN,$(CONFIG_TARGET_OS)))
   CFLAGS += -DPSAPI_VERSION=1 -Ios/windows/posix/include -Wno-format -static
 endif
 
-OBJS := $(SOURCE:.c=.o)
+OBJS := $(SOURCE:.c=.o) $(CXXSOURCE:.cc=.o)
 
 FIO_OBJS = $(OBJS) fio.o
 
@@ -292,6 +293,16 @@ override CFLAGS += -DFIO_VERSION='"$(FIO_VERSION)"'
 	@mkdir -p $(dir $@)
 	$(QUIET_CC)$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) -c $<
 	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $(SRCDIR)/$*.c > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+		sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+
+%.o : %.cc
+	@mkdir -p $(dir $@)
+	$(QUIET_CC)$(CC) -o $@ $(CXXFLAGS) -c $<
+	@$(CC) -MM $(CXXFLAGS) $(SRCDIR)/$*.cc > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
