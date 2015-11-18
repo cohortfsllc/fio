@@ -1576,6 +1576,32 @@ if compile_prog "" "" "static_assert"; then
     static_assert="yes"
 fi
 echo "Static Assert                 $static_assert"
+
+##########################################
+# Check whether we have Crimson
+crimson="no"
+cat > $TMPCXX << EOF
+#include <crimson/engine.h>
+
+int main(int argc, char **argv)
+{
+  crimson::fio::Engine engine;
+  return 0;
+}
+EOF
+
+# use pkg-config for seastar flags
+seastar_cflags=`pkg-config --cflags seastar`
+seastar_ldflags=`pkg-config --libs seastar`
+crimson_ldflags="-lcrimson-fio"
+
+if cxx_compile_prog "$seastar_cflags" "$seastar_ldflags $crimson_ldflags" "crimson"; then
+  CXXFLAGS="$CXXFLAGS $seastar_cflags"
+  LIBS="$LIBS $seastar_ldflags $crimson_ldflags"
+  crimson="yes"
+fi
+echo "Crimson                       $crimson"
+
 #############################################################################
 
 if test "$wordsize" = "64" ; then
@@ -1760,6 +1786,9 @@ if test "$getmntinfo" = "yes" ; then
 fi
 if test "$static_assert" = "yes" ; then
   output_sym "CONFIG_STATIC_ASSERT"
+fi
+if test "$crimson" = "yes" ; then
+  output_sym "CONFIG_CRIMSON"
 fi
 
 if test "$zlib" = "no" ; then
