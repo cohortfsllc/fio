@@ -1,0 +1,17 @@
+# crimson-noop passes requests into a crimson::fio::Engine, but the Backend
+# implementation returns immediately.  it's only useful as a comparison to
+# other configurations
+
+[global]
+ioengine=crimson-osd
+gtod_reduce=1 # disable latency statistics that call gettimeofday a lot
+rw=write
+bs=1
+size=16m
+
+time_based=1
+runtime=20s
+
+[osd]
+iodepth=16
+iodepth_batch_complete=16 # let getevents() spin with less interruptions

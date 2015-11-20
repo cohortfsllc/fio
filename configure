@@ -1593,7 +1593,7 @@ EOF
 # use pkg-config for seastar flags
 seastar_cflags=`pkg-config --cflags seastar`
 seastar_ldflags=`pkg-config --libs seastar`
-crimson_ldflags="-lcrimson-fio"
+crimson_ldflags="-lcapnp -lkj -lcrimson-osd -lcrimson-fio"
 
 if cxx_compile_prog "$seastar_cflags" "$seastar_ldflags $crimson_ldflags" "crimson"; then
   CXXFLAGS="$CXXFLAGS $seastar_cflags"

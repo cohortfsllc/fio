@@ -130,6 +130,7 @@ ifdef CONFIG_MTD
 endif
 ifdef CONFIG_CRIMSON
   CXXSOURCE += engines/crimson_noop.cc
+  CXXSOURCE += engines/crimson_osd.cc
 endif
 
 ifeq ($(CONFIG_TARGET_OS), Linux)
